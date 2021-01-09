@@ -1,24 +1,41 @@
-import {Body, Controller, Delete, Get, Param, Post, Put, Redirect} from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Header,
+    HttpCode,
+    HttpStatus,
+    Param,
+    Post,
+    Put,
+    Redirect,
+    Req, Res
+} from '@nestjs/common';
 import {CreateProjectDto} from "./dto/create-project.dto";
 import {UpdateProjectDto} from "./dto/update-project.dto";
+import { Request, Response} from 'express'
+import {ProjectsService} from "./projects.service";
 
 @Controller('projects')
 export class ProjectsController {
-
+    constructor(private readonly projectsService: ProjectsService) {
+    }
     @Get()
-    @Redirect('https://valkov.dev', 301)
     getAllProjects() {
-        return 'Get Projects'
+        return this.projectsService.getAll().then((r) => console.log(r))
     }
 
     @Get(':id')
-    getProject(@Param('id') id: string): string {
-        return 'getOne'+ id
+    getProject(@Param('id') id: string) {
+        return this.projectsService.getById(id)
     }
 
     @Post()
-    createProject(@Body() createProjectDto: CreateProjectDto): string {
-        return `Name: ${createProjectDto.name}, Description ${createProjectDto.description}`
+    @HttpCode(HttpStatus.CREATED)
+    @Header('Cache-Control', 'none')
+    createProject(@Body() createProjectDto: CreateProjectDto) {
+        this.projectsService.create(createProjectDto)
     }
 
     @Delete(':id')
